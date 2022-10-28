@@ -1,22 +1,32 @@
 [package]
 name = "tauri-svelte-todo-app"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+version = "0.1.0"
+description = "A Tauri TODO App"
+authors = ["Anshul Chauhan <anshulchauhan@outlook.com>"]
+
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.64"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "1.1", features = [] }
 
+[workspace]
+members = [".", "entity", "migration"]
+
 [dependencies]
+entity = { path = "entity" }
+migration = { path = "migration" }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.1", features = ["api-all"] }
+tokio = { version = "1.20", features = ["macros", "rt-multi-thread"] }
+
+[dependencies.sea-orm]
+version = "0.10.0"
+features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ]
+default-features = false
 
 [features]
 # by default Tauri runs in production mode
