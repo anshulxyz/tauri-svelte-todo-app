@@ -4,7 +4,7 @@ use sea_orm::{ActiveModelTrait, EntityTrait, QueryOrder, Set};
 use tauri_svelte_todo_app::establish_connection;
 
 #[tauri::command]
-async fn add_task(text: &str) -> Result<serde_json::Value, String> {
+async fn add_task(text: &str) -> Result<Vec<serde_json::Value>, String> {
     let db = establish_connection().await.unwrap();
 
     let task = task::ActiveModel {
@@ -12,8 +12,10 @@ async fn add_task(text: &str) -> Result<serde_json::Value, String> {
         ..Default::default()
     };
 
-    let task = task.insert(&db).await.unwrap();
-    Ok(serde_json::to_value(task).unwrap())
+    let _ = task.insert(&db).await.unwrap();
+
+    // return all the data
+    get_all_tasks().await
 }
 
 #[tauri::command]
