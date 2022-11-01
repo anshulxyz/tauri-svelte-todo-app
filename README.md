@@ -14,3 +14,6 @@ yarn
 yarn tauri dev
 ```
 
+## Demo
+
+https://user-images.githubusercontent.com/6121530/199335222-86ea8a7d-3d1b-4670-ba66-ebe77f000595.mp4
