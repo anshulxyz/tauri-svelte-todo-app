@@ -1,3 +1,8 @@
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
+
 use entity::prelude::Task;
 use entity::task;
 use sea_orm::{ActiveModelTrait, DeleteResult, EntityTrait, ModelTrait, QueryOrder, Set};
@@ -19,6 +24,23 @@ async fn add_task(text: &str) -> Result<Vec<serde_json::Value>, String> {
 }
 
 #[tauri::command]
+async fn update_task(task_id: i32, is_done: bool) -> Result<Vec<serde_json::Value>, String> {
+    let db = establish_connection().await.unwrap();
+
+    let task = task::Entity::find_by_id(task_id)
+        .one(&db)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let mut task: task::ActiveModel = task.into();
+    task.is_done = Set(is_done);
+    let _: task::Model = task.update(&db).await.unwrap();
+
+    get_all_tasks().await
+}
+
+#[tauri::command]
 async fn delete_task(task_id: i32) -> Result<Vec<serde_json::Value>, String> {
     let db = establish_connection().await.unwrap();
 
@@ -28,7 +50,6 @@ async fn delete_task(task_id: i32) -> Result<Vec<serde_json::Value>, String> {
         .unwrap()
         .unwrap();
 
-    println!("FOund the task in Rust");
     let res: DeleteResult = task.delete(&db).await.unwrap();
     assert_eq!(res.rows_affected, 1);
 
@@ -52,7 +73,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             add_task,
             get_all_tasks,
-            delete_task
+            delete_task,
+            update_task,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -21,10 +21,9 @@
     all_tasks = await invoke("add_task", { text });
     text = "";
   }
-  // TODO: Use forms, so that tab works
 
   async function handleCheckboxInput(task_id, is_done) {
-    console.log(task_id, is_done);
+    all_tasks = await invoke("update_task", { taskId: task_id, isDone: is_done });
   }
 
   async function deleteTask(task_id) {
@@ -49,7 +48,7 @@
             on:click={() => handleCheckboxInput(task.id, !task.is_done)}
           />
           {#if task.is_done}
-            <s class="muted">{task.text}</s>
+            <span class="muted">{task.text}</span>
           {:else}
             {task.text}
           {/if}
