@@ -1,6 +1,6 @@
 use entity::prelude::Task;
 use entity::task;
-use sea_orm::{ActiveModelTrait, EntityTrait, QueryOrder, Set};
+use sea_orm::{ActiveModelTrait, DeleteResult, EntityTrait, ModelTrait, QueryOrder, Set};
 use tauri_svelte_todo_app::establish_connection;
 
 #[tauri::command]
@@ -19,6 +19,23 @@ async fn add_task(text: &str) -> Result<Vec<serde_json::Value>, String> {
 }
 
 #[tauri::command]
+async fn delete_task(task_id: i32) -> Result<Vec<serde_json::Value>, String> {
+    let db = establish_connection().await.unwrap();
+
+    let task = task::Entity::find_by_id(task_id)
+        .one(&db)
+        .await
+        .unwrap()
+        .unwrap();
+
+    println!("FOund the task in Rust");
+    let res: DeleteResult = task.delete(&db).await.unwrap();
+    assert_eq!(res.rows_affected, 1);
+
+    get_all_tasks().await
+}
+
+#[tauri::command]
 async fn get_all_tasks() -> Result<Vec<serde_json::Value>, String> {
     let db = establish_connection().await.unwrap();
     let tasks = Task::find()
@@ -32,7 +49,11 @@ async fn get_all_tasks() -> Result<Vec<serde_json::Value>, String> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![add_task, get_all_tasks])
+        .invoke_handler(tauri::generate_handler![
+            add_task,
+            get_all_tasks,
+            delete_task
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

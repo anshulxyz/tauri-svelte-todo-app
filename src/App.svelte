@@ -6,8 +6,6 @@
 
   async function GetAllTasks() {
     all_tasks = await invoke("get_all_tasks");
-    // set the values in the store
-    console.log(typeof all_tasks);
   }
 
   onMount(async () => {
@@ -16,7 +14,21 @@
 
   let text = "";
   async function AddTask() {
+    // validation
+    if (text.length == 0) {
+      return;
+    }
     all_tasks = await invoke("add_task", { text });
+    text = "";
+  }
+  // TODO: Use forms, so that tab works
+
+  async function handleCheckboxInput(task_id, is_done) {
+    console.log(task_id, is_done);
+  }
+
+  async function deleteTask(task_id) {
+    all_tasks = await invoke("delete_task", { taskId: task_id });
   }
 </script>
 
@@ -30,8 +42,18 @@
     <ul>
       {#each all_tasks as task}
         <li class="row">
-          <input type="checkbox" name="" id="{task.id}" bind:checked={task.is_done}>
-          {task.id} - {task.text}
+          <input
+            type="checkbox"
+            name=""
+            bind:checked={task.is_done}
+            on:click={() => handleCheckboxInput(task.id, !task.is_done)}
+          />
+          {#if task.is_done}
+            <s class="muted">{task.text}</s>
+          {:else}
+            {task.text}
+          {/if}
+          <button class="delete" on:click={() => deleteTask(task.id)} > Delete </button>
         </li>
       {/each}
     </ul>
